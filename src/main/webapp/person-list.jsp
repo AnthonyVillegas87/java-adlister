@@ -7,9 +7,9 @@
 --%>
 
 <%@ page import="java.util.List" %>
-<%@ page import="entity.Person" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Arrays" %>
+<%@ page import="entity.Person" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -22,7 +22,7 @@
             new Person(3, "john","doe", 45)
 
     ));
-    request.setAttribute("person", people);
+    request.setAttribute("people", people);
 
 %>
 
