@@ -23,7 +23,7 @@
 </head>
 <body>
     <h1>Login Form</h1>
-    <form action="" method="post">
+    <form method="post">
         <label for="username"><b>Username</b></label>
         <input type="text" id="username" placeholder="Enter Username" name="username">
         <br>
