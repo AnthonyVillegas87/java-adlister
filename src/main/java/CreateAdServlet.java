@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.SQLException;
 
 @WebServlet(name = "CreateAdServlet", urlPatterns = "/ads/create")
 public class CreateAdServlet extends HttpServlet {
@@ -13,12 +14,20 @@ public class CreateAdServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        Ad ad = new Ad(
-            1, // for now we'll hardcode the user id
-            request.getParameter("title"),
-            request.getParameter("description")
-        );
-        DaoFactory.getAdsDao().insert(ad);
+        String adTitle = request.getParameter("title");
+        String adDescription = request.getParameter("description");
+
+        try {
+            DaoFactory.getAdsDao().insert(new Ad(1, adTitle, adDescription));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+//        Ad ad = new Ad(
+//            1, // for now we'll hardcode the user id
+//            request.getParameter("title"),
+//            request.getParameter("description")
+//        );
+//        DaoFactory.getAdsDao().insert(ad);
         response.sendRedirect("/ads");
     }
 }

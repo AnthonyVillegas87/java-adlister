@@ -1,5 +1,6 @@
-import com.mysql.jdbc.Driver;
 
+import com.mysql.cj.jdbc.Driver;
+import java.sql.DriverManager;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,18 +8,15 @@ import java.util.List;
 public class MySQLAdsDao implements Ads {
     private Connection connection;
 
-    public MySQLAdsDao(Config config) {
+    public MySQLAdsDao(Config config) throws SQLException{
 
-        try{
-            DriverManager.registerDriver(new Driver());
+           DriverManager.registerDriver(new Driver());
             this.connection = DriverManager.getConnection(
                     config.getUrl(),
                     config.getUser(),
                     config.getPassword()
             );
-        }catch(SQLException throwables) {
-            throwables.printStackTrace();
-        }
+
     }
 
     @Override
@@ -31,7 +29,7 @@ public class MySQLAdsDao implements Ads {
 
             while(rs.next()) {
                 Ad ad = new Ad(
-                  rs.getLong("userId"),
+                  rs.getLong("user_Id"),
                   rs.getString("title"),
                   rs.getString("description")
                 );
