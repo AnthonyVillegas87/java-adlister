@@ -1,17 +1,20 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import com.mysql.jdbc.Driver;
+
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MySQLAdsDao implements Ads {
     private Connection connection;
 
-    public MySQLAdsDao() {
+    public MySQLAdsDao(Config config) {
+
         try{
+            DriverManager.registerDriver(new Driver());
             this.connection = DriverManager.getConnection(
-                    "",
-                    "",
-                    ""
+                    config.getUrl(),
+                    config.getUser(),
+                    config.getPassword()
             );
         }catch(SQLException throwables) {
             throwables.printStackTrace();
@@ -20,11 +23,45 @@ public class MySQLAdsDao implements Ads {
 
     @Override
     public List<Ad> all() {
-        return null;
+        List<Ad> ads = new ArrayList<>();
+        String query = "SELECT * FROM adlister_db.ads";
+        try {
+            Statement stmt = connection.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            while(rs.next()) {
+                Ad ad = new Ad(
+                  rs.getLong("userId"),
+                  rs.getString("title"),
+                  rs.getString("description")
+                );
+                ads.add(ad);
+            }
+
+        }catch(SQLException throwables) {
+          throwables.printStackTrace();
+        }
+         return ads;
     }
 
     @Override
     public Long insert(Ad ad) {
-        return null;
+        long insertedId = 0;
+        String insertQuery = String.format(
+                "INSERT INTO ads (title, description) VALUES ( %s, %s)",
+                ad.getTitle(),
+                ad.getDescription()
+        );
+        try {
+            Statement stmt = connection.createStatement();
+            stmt.executeUpdate(insertQuery, Statement.RETURN_GENERATED_KEYS);
+            ResultSet generateKeys = stmt.getGeneratedKeys();
+            if(generateKeys.next()) {
+                insertedId = generateKeys.getLong(1);
+            }
+        }catch(SQLException e) {
+            e.printStackTrace();
+        }
+        return insertedId;
     }
 }
