@@ -1,4 +1,4 @@
-package com.codeup.adlister.models;
+package com.codeup.adlister.dao;
 
 public class User {
     private long id;

@@ -1,22 +1,18 @@
 package com.codeup.adlister.dao;
 
-import com.codeup.adlister.models.Ad;
-import com.mysql.cj.jdbc.Driver;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import com.mysql.cj.jdbc.Driver;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MySQLAdsDao implements Ads {
-    private Connection connection = null;
+    private Connection connection;
 
     public MySQLAdsDao(Config config) {
         try {
             DriverManager.registerDriver(new Driver());
-            connection = DriverManager.getConnection(
+            this.connection = DriverManager.getConnection(
                 config.getUrl(),
                 config.getUser(),
                 config.getPassword()
@@ -28,10 +24,16 @@ public class MySQLAdsDao implements Ads {
 
     @Override
     public List<Ad> all() {
-        Statement stmt = null;
+
         try {
-            stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM ads");
+            String safeSearchQuery = "SELECT * FROM ads WHERE title = ?";
+            PreparedStatement stmt = connection.prepareStatement(safeSearchQuery);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                rs.getString(2);
+            }
+
+
             return createAdsFromResults(rs);
         } catch (SQLException e) {
             throw new RuntimeException("Error retrieving all ads.", e);
@@ -40,25 +42,45 @@ public class MySQLAdsDao implements Ads {
 
     @Override
     public Long insert(Ad ad) {
+
+
         try {
-            Statement stmt = connection.createStatement();
-            stmt.executeUpdate(createInsertQuery(ad), Statement.RETURN_GENERATED_KEYS);
-            ResultSet rs = stmt.getGeneratedKeys();
+            String insertQuery = "INSERT INTO ads(user_id, title, description) VALUES ( ?, ?, ?)";
+            PreparedStatement ps = connection.prepareStatement(insertQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+            ps.setLong(1, ad.getId());
+            ps.setString(2, ad.getTitle());
+            ps.setString(3, ad.getDescription());
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
             rs.next();
-            return rs.getLong(1);
+           return rs.getLong(1);
         } catch (SQLException e) {
             throw new RuntimeException("Error creating a new ad.", e);
+
         }
+
+
+
+
+//        try {
+//            Statement stmt = connection.createStatement();
+//            stmt.executeUpdate(createInsertQuery(ad), Statement.RETURN_GENERATED_KEYS);
+//            ResultSet rs = stmt.getGeneratedKeys();
+//            rs.next();
+//            return rs.getLong(1);
+//        } catch (SQLException e) {
+//
+//        }
+
     }
 
-    private String createInsertQuery(Ad ad) {
-        return "INSERT INTO ads(user_id, title, description) VALUES "
-            + "(" + ad.getUserId() + ", "
-            + "'" + ad.getTitle() +"', "
-            + "'" + ad.getDescription() + "')";
-    }
 
     private Ad extractAd(ResultSet rs) throws SQLException {
+        if(!rs.next()) {
+            return null;
+        }
         return new Ad(
             rs.getLong("id"),
             rs.getLong("user_id"),
